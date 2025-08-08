@@ -35,11 +35,19 @@ if uploaded_image:
     # Run prediction
     predictions = model.predict_image(image)
 
-    # Create mask from bounding boxes
-    mask = np.zeros((img_height, img_width), dtype=np.uint8)
+    # Filter predictions by confidence score
+    confidence_threshold = 0.5  # try 0.3, 0.5, 0.7, etc.
+    predictions = predictions[predictions["score"] >= confidence_threshold]
+
+    total_tree_area_px = 0
+    polygons = []
+
     for _, row in predictions.iterrows():
-        xmin, ymin, xmax, ymax = map(int, row[["xmin", "ymin", "xmax", "ymax"]])
-        cv2.rectangle(mask, (xmin, ymin), (xmax, ymax), 255, thickness=-1)  # fill box on mask
+        xmin, ymin, xmax, ymax = row[["xmin", "ymin", "xmax", "ymax"]]
+        total_tree_area_px += (xmax - xmin) * (ymax - ymin)
+        polygons.append(box(xmin, ymin, xmax, ymax))
+        cv2.rectangle(image, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0, 255, 0), 2)
+
 
     # === Pixel resolution (GSD) calculation ===
     altitude_m = altitude_ft * 0.3048
