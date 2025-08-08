@@ -4,3 +4,4 @@ opencv-python-headless
 shapely
 deepforest
 pandas
+albumentations==1.2.1
