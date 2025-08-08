@@ -1,10 +1,6 @@
 streamlit
-deepforest
-torch
-torchvision
 numpy
-pandas
-shapely
-matplotlib
-Pillow
 opencv-python-headless
+shapely
+deepforest
+pandas
