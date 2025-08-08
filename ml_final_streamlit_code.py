@@ -1,44 +1,71 @@
 import streamlit as st
 import numpy as np
-from shapely.geometry import box, Polygon
+import cv2
+from shapely.geometry import box
 from shapely.ops import unary_union
+from shapely.geometry import Polygon
+from deepforest import main
 
-# Function to get cv2 when needed
-def get_cv2():
-    import cv2
-    return cv2
+# === Streamlit App ===
+st.title("Tree Canopy Detection & Clearing Cost Estimator 🌳")
 
-# Example: function to load and process image
-def process_image(image_path):
-    cv2 = get_cv2()
-    img = cv2.imread(image_path)
-    # Example processing: convert to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    return gray
+# Sidebar for settings
+st.sidebar.header("Settings")
+altitude_ft = st.sidebar.number_input("Altitude (ft)", value=400.0)
+sensor_width_mm = st.sidebar.number_input("Sensor width (mm)", value=13.2)
+focal_length_mm = st.sidebar.number_input("Focal length (mm)", value=8.8)
+cost_per_m2 = st.sidebar.number_input("Cost per m² to clear", value=5.0)
 
-# Example: calculate area from a polygon
-def calculate_area(coords):
-    polygon = Polygon(coords)
-    return polygon.area
+uploaded_image = st.file_uploader("Upload an aerial image", type=["jpg", "jpeg", "png"])
 
-# Streamlit UI
-st.title("ML Final Project - Image Processing & Area Calculation")
+if uploaded_image:
+    # Read image
+    image = cv2.imdecode(np.frombuffer(uploaded_image.read(), np.uint8), cv2.IMREAD_COLOR)
+    img_height, img_width = image.shape[:2]
 
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+    # === Load DeepForest Model ===
+    model = main.deepforest()
+    model.use_release()
 
-if uploaded_file is not None:
-    cv2 = get_cv2()
-    # Read image from the uploaded file
-    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
-    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    # Run prediction
+    predictions = model.predict_image(image)
+    total_tree_area_px = 0
+    polygons = []
 
-    st.image(img, channels="BGR", caption="Uploaded Image")
+    for _, row in predictions.iterrows():
+        xmin, ymin, xmax, ymax = row[["xmin", "ymin", "xmax", "ymax"]]
+        total_tree_area_px += (xmax - xmin) * (ymax - ymin)
+        polygons.append(box(xmin, ymin, xmax, ymax))
+        cv2.rectangle(image, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0, 255, 0), 2)
 
-    # Example: Convert to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    st.image(gray, caption="Grayscale Image", channels="GRAY")
+    # === Merge polygons with buffer for smoothing ===
+    merged_canopy = unary_union(polygons).buffer(10)  # Buffer in pixels for smooth shape
+    merged_canopy_area_px = merged_canopy.area
 
-    # Dummy coordinates for polygon (example only)
-    coords = [(0,0), (0,10), (10,10), (10,0)]
-    area = calculate_area(coords)
-    st.write(f"Calculated Area: {area}")
+    # === Pixel resolution (GSD) calculation ===
+    altitude_m = altitude_ft * 0.3048
+    pixel_resolution_m = (sensor_width_mm * altitude_m * 1000) / (focal_length_mm * img_width)
+
+    # === Area in m² ===
+    merged_canopy_area_m2 = merged_canopy_area_px * (pixel_resolution_m ** 2)
+
+    # === Cost estimation ===
+    estimated_cost = merged_canopy_area_m2 * cost_per_m2
+
+    # === Display results ===
+    st.subheader("Results")
+    st.write(f"**Pixel Resolution (GSD):** {pixel_resolution_m:.4f} m/pixel")
+    st.write(f"**Estimated Tree-Covered Area:** {merged_canopy_area_m2:.2f} m²")
+    st.write(f"**Estimated Clearing Cost:** ${estimated_cost:,.2f}")
+
+    # Draw merged polygon on image
+    overlay = image.copy()
+    if merged_canopy.geom_type == "Polygon":
+        coords = np.array(merged_canopy.exterior.coords, dtype=np.int32)
+        cv2.polylines(overlay, [coords], True, (0, 0, 255), 2)
+    elif merged_canopy.geom_type == "MultiPolygon":
+        for poly in merged_canopy:
+            coords = np.array(poly.exterior.coords, dtype=np.int32)
+            cv2.polylines(overlay, [coords], True, (0, 0, 255), 2)
+
+    st.image(cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB), caption="Detections with Merged Canopy", use_column_width=True)
