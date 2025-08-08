@@ -37,7 +37,7 @@ if uploaded_image:
     predictions = model.predict_image(image)
 
     # Filter predictions by confidence score
-    confidence_threshold = 0.25  # try 0.3, 0.5, 0.7, etc.
+    confidence_threshold = 0.2  # try 0.3, 0.5, 0.7, etc.
     predictions = predictions[predictions["score"] >= confidence_threshold]
 
     total_tree_area_px = 0
