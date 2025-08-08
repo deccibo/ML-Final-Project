@@ -43,7 +43,7 @@ if uploaded_image:
 
     # === Pixel resolution (GSD) calculation ===
     altitude_m = altitude_ft * 0.3048
-    pixel_resolution_m = (sensor_width_mm * altitude_m * 1000) / (focal_length_mm * img_width)
+    pixel_resolution_m = (sensor_width_mm * altitude_m) / (focal_length_mm * img_width)
 
     # === Smoothing using morphological operations ===
     dilate_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (DILATE_SIZE, DILATE_SIZE))
