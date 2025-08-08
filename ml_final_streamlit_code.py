@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import cv2
 from deepforest import main
+from shapely.geometry import box
 
 # === Streamlit App ===
 st.title("Tree Canopy Detection & Clearing Cost Estimator 🌳")
