@@ -1,9 +1,10 @@
 streamlit
 numpy
 opencv-python-headless
-cv2
+opencv-python==0.0.0
 shapely
 pillow
 deepforest
 torch
+
 
