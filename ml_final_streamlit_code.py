@@ -64,7 +64,7 @@ if uploaded_image:
         coords = np.array(merged_canopy.exterior.coords, dtype=np.int32)
         cv2.polylines(overlay, [coords], True, (0, 0, 255), 2)
     elif merged_canopy.geom_type == "MultiPolygon":
-        for poly in merged_canopy:
+        for poly in merged_canopy.geoms:
             coords = np.array(poly.exterior.coords, dtype=np.int32)
             cv2.polylines(overlay, [coords], True, (0, 0, 255), 2)
 
