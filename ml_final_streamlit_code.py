@@ -54,6 +54,15 @@ if uploaded_image:
     altitude_m = altitude_ft * 0.3048
     pixel_resolution_m = (sensor_width_mm * altitude_m) / (focal_length_mm * img_width)
 
+    # Create empty mask
+    mask = np.zeros((img_height, img_width), dtype=np.uint8)
+
+    # Fill mask with predicted bounding boxes
+    for _, row in predictions.iterrows():
+        xmin, ymin, xmax, ymax = map(int, row[["xmin", "ymin", "xmax", "ymax"]])
+        cv2.rectangle(mask, (xmin, ymin), (xmax, ymax), 255, thickness=-1)
+
+
     # === Smoothing using morphological operations ===
     dilate_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (DILATE_SIZE, DILATE_SIZE))
     close_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (CLOSE_SIZE, CLOSE_SIZE))
