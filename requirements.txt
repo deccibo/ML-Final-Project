@@ -8,6 +8,3 @@ shapely
 matplotlib
 Pillow
 opencv-python-headless
-# Block GUI-based OpenCV variants
-opencv-python==0.0.0
-opencv-contrib-python==0.0.0
