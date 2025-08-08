@@ -1,10 +1,12 @@
 streamlit
-numpy
-opencv-python-headless
-opencv-python==0.0.0
-shapely
-pillow
 deepforest
 torch
-
-
+torchvision
+numpy
+pandas
+shapely
+matplotlib
+Pillow
+opencv-python-headless
+# Prevent installation of regular opencv-python
+opencv-python==0.0.0
