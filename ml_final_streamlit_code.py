@@ -68,4 +68,5 @@ if uploaded_image:
             coords = np.array(poly.exterior.coords, dtype=np.int32)
             cv2.polylines(overlay, [coords], True, (0, 0, 255), 2)
 
-    st.image(cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB), caption="Detections with Merged Canopy", use_column_width=True)
+    st.image(cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB), caption="Detections with Merged Canopy", use_container_width=True)
+
