@@ -9,7 +9,7 @@ st.title("Tree Canopy Detection & Clearing Cost Estimator 🌳")
 
 # Sidebar for settings
 st.sidebar.header("Settings")
-altitude_ft = st.sidebar.number_input("Altitude (ft)", value=400.0)
+altitude_ft = st.sidebar.number_input("Altitude (ft)", value=300.0)
 sensor_width_mm = st.sidebar.number_input("Sensor width (mm)", value=13.2)
 focal_length_mm = st.sidebar.number_input("Focal length (mm)", value=8.8)
 cost_per_m2 = st.sidebar.number_input("Cost per m² to clear", value=5.0)
@@ -37,7 +37,7 @@ if uploaded_image:
     predictions = model.predict_image(image)
 
     # Filter predictions by confidence score
-    confidence_threshold = 0.2  # try 0.3, 0.5, 0.7, etc.
+    confidence_threshold = 0.17  # try 0.3, 0.5, 0.7, etc.
     predictions = predictions[predictions["score"] >= confidence_threshold]
 
     total_tree_area_px = 0
