@@ -83,7 +83,7 @@ if uploaded_image:
     overlay = np.zeros_like(image, dtype=np.uint8)
     overlay[mask_final > 0] = (0, 255, 0)  # green overlay for canopy
 
-    # Convert image to RGB for Streamlit
+    # convert image to RGB for Streamlit
     if len(image.shape) == 2:
         img_rgb = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
     elif image.shape[2] == 4:
